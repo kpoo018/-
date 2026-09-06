@@ -8,3 +8,11 @@
 ```bash
 android/build.sh apk && cp android/app/build/kashi-debug.apk dist/
 ```
+
+## 서명
+
+`android/debug.keystore` 를 저장소에 함께 둔다. 이 키로 서명해야 기기에서 덮어쓰기 설치가
+되기 때문이다. 키가 바뀌면 안드로이드가 서명 불일치로 설치를 거부해서, 지우고 다시 깔아야 한다.
+
+비밀번호가 `android` 인 디버그 키다. 안드로이드 SDK 가 개발용으로 배포하는 공용 디버그 키와
+성격이 같아 감출 값이 아니다. 스토어에 올릴 일이 생기면 그때 별도의 릴리스 키를 만든다.

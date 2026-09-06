@@ -131,7 +131,9 @@ build_apk() {
   "$ZIPALIGN" -f -p 4 "$OUT/unaligned.apk" "$OUT/aligned.apk"
 
   log "서명 (디버그 키)"
-  local keystore="$OUT/debug.keystore"
+  # 키스토어는 $OUT 밖에 둔다. $OUT 은 빌드마다 통째로 지워지므로 그 안에 두면 매번 새 키로
+  # 서명되고, 그러면 기기에서 덮어쓰기 설치가 서명 불일치로 거부된다.
+  local keystore="${DEBUG_KEYSTORE:-$HERE/debug.keystore}"
   [[ -f "$keystore" ]] || keytool -genkeypair -v -keystore "$keystore" \
     -storepass android -keypass android -alias androiddebugkey \
     -keyalg RSA -keysize 2048 -validity 10000 \
