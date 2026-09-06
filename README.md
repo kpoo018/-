@@ -121,6 +121,15 @@ export ANTHROPIC_API_KEY=sk-...
 
 `android/` 에 Gradle 프로젝트가 있다. Android Studio 로 열어 빌드한다 (minSdk 26).
 
+AndroidX 를 쓰지 않는다. 프레임워크 View 와 coroutines 만으로 충분한 크기라서 그렇게
+했고, 덕분에 Google Maven 에 닿을 수 없는 환경에서도 빌드할 수 있다:
+
+```bash
+# Gradle 없이. android.jar + kotlinc + d8 + aapt2 만 있으면 된다. 경로는 스크립트 상단 참고.
+android/build.sh apk    # app/build/kashi-debug.apk
+android/build.sh test   # JVM 단위 테스트
+```
+
 1. 서버를 PC 에서 띄운다 (`kashi.cli serve`). 폰과 같은 네트워크여야 한다.
 2. 앱 설정에서 서버 주소를 넣는다. 예: `http://192.168.0.10:8765`
 3. **알림 접근 권한**을 켠다 (설정 화면의 버튼이 바로 데려간다).
@@ -145,9 +154,10 @@ export ANTHROPIC_API_KEY=sk-...
 
 ## 알아둘 것
 
-- **안드로이드 앱은 이 저장소에서 컴파일 검증을 하지 않았다.** 개발 환경에 Android SDK
-  가 없어 소스만 작성했다. 처음 빌드할 때 의존성 버전 조정이 필요할 수 있다.
-  파이프라인 쪽은 테스트 51 개가 통과한다.
+- **안드로이드 앱은 컴파일·패키징·단위 테스트까지는 검증했지만 기기에서 돌려 보지는
+  못했다.** 에뮬레이터 시스템 이미지를 받을 수 없는 환경이었다. 알림 접근 권한 흐름과
+  MediaSession 읽기는 실제 기기에서 확인이 필요하다. 파이프라인은 테스트 51 개,
+  앱은 JVM 테스트 8 개가 통과한다.
 - **가사 저작권.** LRCLIB 은 크라우드소싱이라 개인 학습용으로 쓰는 것과 배포·상업
   이용은 완전히 다른 이야기다. 배포하려면 일본 곡은 JASRAC/NexTone, 한국 곡은 KOMCA
   관련 라이선스가 필요하고, 실무적으로는 Musixmatch(글로벌) 또는

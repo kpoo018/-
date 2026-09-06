@@ -4,4 +4,18 @@
     <string name="channel_name">재생 중 가사</string>
     <string name="channel_description">잠금화면과 알림창에 현재 가사를 보여줍니다.</string>
     <string name="widget_description">재생 중인 곡의 가사를 원문·발음·뜻으로 보여줍니다.</string>
+
+    <string name="settings">설정</string>
+    <string name="close">닫기</string>
+    <string name="permission_title">알림 접근 권한이 필요합니다</string>
+    <string name="permission_body">재생 중인 곡과 재생 위치를 읽으려면 이 권한이 있어야 합니다. Spotify 계정이나 개발자 등록은 필요하지 않습니다.</string>
+    <string name="permission_button">권한 설정 열기</string>
+    <string name="server_hint">가사 서버 주소 (http://192.168.0.10:8765)</string>
+    <string name="hangul_mode">한글 표기</string>
+    <string name="mode_pronunciation">발음 (토오쿄오)</string>
+    <string name="mode_official">표기법 (도쿄)</string>
+    <string name="offset_label">싱크 보정: %1$dms</string>
+    <string name="offset_help">가사가 늦게 넘어가면 오른쪽으로 옮기세요.</string>
+    <string name="idle_message">재생을 시작하면 가사가 나옵니다</string>
+    <string name="no_track">재생 중인 곡이 없습니다</string>
 </resources>
