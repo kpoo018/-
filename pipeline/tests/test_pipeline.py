@@ -135,3 +135,19 @@ def test_cache_separates_modes(tmp_path, stub_track):
     track_id = pipeline.build(artist="テスト", title="サンプル").track_id
     assert cache.load(track_id, "pronunciation").lines[2].hangul == "토오쿄오에 이코오"
     assert cache.load(track_id, "official").lines[2].hangul == "도쿄에 이코"
+
+
+def test_cache_save_also_writes_request_key(tmp_path, stub_track):
+    """요청에 쓴 이름과 LRCLIB 정규 표기가 달라도 캐시가 맞아야 한다."""
+    from kashi.models import make_track_id
+
+    cache = Cache(tmp_path)
+    doc = pipeline.build(artist="テスト", title="サンプル")
+
+    # 사용자는 다른 표기로 물어볼 수 있다 (플레이어 메타데이터가 흔히 그렇다).
+    requested = make_track_id("Test", "Sample", "")
+    assert requested != doc.track_id
+
+    cache.save(doc, extra_ids=[requested])
+    assert cache.load(doc.track_id, doc.hangul_mode) is not None
+    assert cache.load(requested, doc.hangul_mode) is not None

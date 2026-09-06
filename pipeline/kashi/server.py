@@ -80,7 +80,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(HTTPStatus.BAD_GATEWAY, {"error": str(exc)})
             return
 
-        self.cache.save(doc)
+        self.cache.save(doc, extra_ids=[track_id])
         self._send(HTTPStatus.OK, doc.to_dict())
 
     @staticmethod

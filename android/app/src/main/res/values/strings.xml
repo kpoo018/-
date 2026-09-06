@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">가사</string>
+    <string name="channel_name">재생 중 가사</string>
+    <string name="channel_description">잠금화면과 알림창에 현재 가사를 보여줍니다.</string>
+    <string name="widget_description">재생 중인 곡의 가사를 원문·발음·뜻으로 보여줍니다.</string>
+</resources>

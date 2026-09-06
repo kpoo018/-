@@ -88,8 +88,8 @@ def cmd_build(args: argparse.Namespace) -> int:
         except (LyricsNotFound, lrclib.LrclibError) as exc:
             print(str(exc), file=sys.stderr)
             return 1
-        # 캐시 키는 LRCLIB 이 돌려준 정규 표기를 따른다.
-        cache.save(doc)
+        # 다음에 같은 이름으로 물어봐도 맞도록 요청에 쓴 키로도 남긴다.
+        cache.save(doc, extra_ids=[track_id])
 
     if args.out:
         Path(args.out).write_text(
