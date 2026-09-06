@@ -23,6 +23,16 @@ class Settings(context: Context) {
         get() = prefs.getLong(KEY_OFFSET, 0L)
         set(value) = prefs.edit().putLong(KEY_OFFSET, value).apply()
 
+    /**
+     * 앱 전체 켜기/끄기.
+     *
+     * 알림 리스너 서비스는 시스템이 붙잡고 있어 앱이 스스로 멈출 수 없다. 대신 이 값이
+     * 꺼지면 아무것도 그리지 않고 예약도 하지 않는다. 권한을 뺏지 않고 멈추는 방법이다.
+     */
+    var enabled: Boolean
+        get() = prefs.getBoolean(KEY_ENABLED, true)
+        set(value) = prefs.edit().putBoolean(KEY_ENABLED, value).apply()
+
     /** 잠금화면 알림을 띄울지. */
     var notificationEnabled: Boolean
         get() = prefs.getBoolean(KEY_NOTIFICATION, true)
@@ -49,6 +59,7 @@ class Settings(context: Context) {
         const val MODE_PRONUNCIATION = "pronunciation"
         const val MODE_OFFICIAL = "official"
 
+        private const val KEY_ENABLED = "enabled"
         private const val KEY_MODE = "hangul_mode"
         private const val KEY_OFFSET = "offset_ms"
         private const val KEY_NOTIFICATION = "notification_enabled"

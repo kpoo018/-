@@ -15,6 +15,24 @@ object LyricBuilder {
     private const val TAG = "LyricBuilder"
 
     /**
+     * 이미 만들어 둔 문서의 원문만 다시 분석한다. 네트워크를 타지 않는다.
+     *
+     * 표기 모드를 바꾸거나 읽기 교정을 저장했을 때 쓴다. 시간·원문·뜻은 그대로 두고
+     * 읽기와 한글만 다시 만든다.
+     */
+    fun reanalyze(doc: LyricDoc, mode: HangulMode, overrides: Map<String, String>): LyricDoc {
+        val lines = doc.lines.map { line ->
+            if (line.original.isBlank()) {
+                line.copy(reading = "", hangul = "")
+            } else {
+                val parsed = Reading.analyze(line.original, overrides)
+                line.copy(reading = parsed.reading(mode), hangul = parsed.hangul(mode))
+            }
+        }
+        return doc.copy(lines = lines, hangulMode = mode.id)
+    }
+
+    /**
      * LRCLIB 에서 가사를 받아 3단 문서로 만든다. 가사가 없으면 null.
      *
      * 번역 실패는 문서를 버릴 이유가 못 된다. 뜻만 비운 채 돌려주고 [LyricDoc.translator] 를

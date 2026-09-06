@@ -10,20 +10,25 @@ import android.provider.Settings as AndroidSettings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import android.widget.BaseAdapter
 import android.widget.Button
+import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.ListView
 import android.widget.RadioGroup
 import android.widget.SeekBar
+import android.widget.Switch
 import android.widget.TextView
 import com.kashi.lyrics.LyricState
 import com.kashi.lyrics.R
 import com.kashi.lyrics.data.LyricDoc
 import com.kashi.lyrics.data.LyricLine
+import com.kashi.lyrics.data.ReadingOverrides
 import com.kashi.lyrics.data.Settings
 import com.kashi.lyrics.data.Translator
 import com.kashi.lyrics.service.LyricListenerService
+import com.kashi.lyrics.text.HangulMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -40,10 +45,12 @@ import kotlinx.coroutines.launch
 class MainActivity : Activity() {
 
     private lateinit var settings: Settings
+    private lateinit var overrides: ReadingOverrides
     private lateinit var adapter: LyricAdapter
 
     private lateinit var settingsPanel: View
     private lateinit var toggleButton: Button
+    private lateinit var enabledSwitch: Switch
     private lateinit var trackLabel: TextView
     private lateinit var message: TextView
     private lateinit var list: ListView
@@ -56,16 +63,25 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         settings = Settings(this)
+        overrides = ReadingOverrides(this)
 
         settingsPanel = findViewById(R.id.settings_panel)
         toggleButton = findViewById(R.id.toggle_settings)
+        enabledSwitch = findViewById(R.id.enabled_switch)
         trackLabel = findViewById(R.id.track_label)
         message = findViewById(R.id.message)
         list = findViewById(R.id.lyric_list)
 
+        applySystemBarInsets()
+
         adapter = LyricAdapter(LayoutInflater.from(this))
         list.adapter = adapter
+        list.setOnItemLongClickListener { _, _, position, _ ->
+            fixReadingAt(position)
+            true
+        }
 
+        bindEnabledSwitch()
         bindSettings()
         // 권한이 아직 없으면 설정부터 보여준다. 그게 첫 화면에서 할 일이다.
         showSettings(!isListenerEnabled())
@@ -76,9 +92,38 @@ class MainActivity : Activity() {
         }
     }
 
+    /**
+     * 상태바·내비게이션 바 뒤로 내용이 깔리지 않게 여백을 준다.
+     *
+     * targetSdk 35 부터 안드로이드가 화면 끝까지 그리도록 강제한다. 그대로 두면 상단 바가
+     * 상태바와 겹친다.
+     */
+    private fun applySystemBarInsets() {
+        val root = findViewById<View>(R.id.root)
+        root.setOnApplyWindowInsetsListener { view, insets ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val bars = insets.getInsets(
+                    WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout()
+                )
+                view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            } else {
+                @Suppress("DEPRECATION")
+                view.setPadding(
+                    insets.systemWindowInsetLeft,
+                    insets.systemWindowInsetTop,
+                    insets.systemWindowInsetRight,
+                    insets.systemWindowInsetBottom,
+                )
+            }
+            insets
+        }
+        root.requestApplyInsets()
+    }
+
     override fun onStart() {
         super.onStart()
         refreshPermissionCard()
+        enabledSwitch.isChecked = settings.enabled
         collectJob = scope.launch {
             LyricState.snapshot.collect { render(it) }
         }
@@ -93,6 +138,18 @@ class MainActivity : Activity() {
     override fun onDestroy() {
         scope.cancel()
         super.onDestroy()
+    }
+
+    private fun bindEnabledSwitch() {
+        enabledSwitch.isChecked = settings.enabled
+        enabledSwitch.setText(if (settings.enabled) R.string.on else R.string.off)
+        enabledSwitch.setOnCheckedChangeListener { _: CompoundButton, checked: Boolean ->
+            enabledSwitch.setText(if (checked) R.string.on else R.string.off)
+            if (checked != settings.enabled) {
+                settings.enabled = checked
+                LyricListenerService.requestRefresh()
+            }
+        }
     }
 
     private fun showSettings(visible: Boolean) {
@@ -200,6 +257,25 @@ class MainActivity : Activity() {
 
     private fun offsetOf(progress: Int): Long = (progress - OFFSET_STEPS / 2) * OFFSET_STEP_MS
 
+    /** 가사 줄을 길게 누르면 그 줄의 한자 읽기를 고칠 수 있다. */
+    private fun fixReadingAt(position: Int) {
+        val snapshot = LyricState.snapshot.value
+        val doc = snapshot.doc ?: return
+        val line = doc.lines.getOrNull(position) ?: return
+        if (line.original.isBlank()) return
+
+        ReadingFixDialog.show(
+            context = this,
+            trackId = doc.trackId,
+            line = line.original,
+            mode = HangulMode.of(settings.hangulMode),
+            overrides = overrides,
+        ) {
+            // 저장한 교정을 곧바로 반영한다. 다시 분석만 하면 되고 네트워크는 타지 않는다.
+            LyricListenerService.requestRefresh()
+        }
+    }
+
     private fun isListenerEnabled(): Boolean =
         AndroidSettings.Secure.getString(contentResolver, "enabled_notification_listeners")
             ?.contains(packageName) == true
@@ -218,7 +294,11 @@ class MainActivity : Activity() {
         if (doc == null) {
             list.visibility = View.GONE
             message.visibility = View.VISIBLE
-            message.text = snapshot.message.ifBlank { getString(R.string.idle_message) }
+            message.text = when {
+                !settings.enabled -> getString(R.string.disabled_message)
+                snapshot.message.isNotBlank() -> snapshot.message
+                else -> getString(R.string.idle_message)
+            }
             adapter.update(null, -1)
             lastScrolledIndex = -1
             return

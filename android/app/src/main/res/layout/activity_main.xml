@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -25,6 +26,13 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
+        <Switch
+            android:id="@+id/enabled_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#CCCCCC"
+            android:textSize="13sp" />
+
         <Button
             android:id="@+id/toggle_settings"
             style="?android:attr/borderlessButtonStyle"
@@ -34,7 +42,7 @@
             android:textColor="#BB86FC" />
     </LinearLayout>
 
-    <!-- 설정 패널. 서버 주소가 없으면 처음에 펼쳐서 보여준다. -->
+    <!-- 설정 패널. 권한이 없으면 처음에 펼쳐서 보여준다. -->
     <ScrollView
         android:id="@+id/settings_panel"
         android:layout_width="match_parent"
@@ -69,6 +77,14 @@
                     android:text="@string/permission_body"
                     android:textColor="#CCCCCC"
                     android:textSize="13sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/restricted_hint"
+                    android:textColor="#FFD08A"
+                    android:textSize="12sp" />
 
                 <Button
                     android:id="@+id/open_permission"

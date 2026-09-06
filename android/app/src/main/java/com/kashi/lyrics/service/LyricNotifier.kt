@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Icon
 import android.widget.RemoteViews
 import com.kashi.lyrics.R
 import com.kashi.lyrics.data.LyricLine
@@ -56,7 +57,23 @@ class LyricNotifier(private val context: Context) {
             PendingIntent.FLAG_IMMUTABLE,
         )
 
+        // 상시 알림은 쓸어서 지울 수 없다. 멈추려면 명시적인 버튼이 있어야 한다.
+        val turnOff = Notification.Action.Builder(
+            // 아이콘에 null 을 주면 Action.Builder 가 터진다. 프레임워크 기본 아이콘을 쓴다.
+            Icon.createWithResource(context, android.R.drawable.ic_menu_close_clear_cancel),
+            context.getString(R.string.turn_off),
+            PendingIntent.getBroadcast(
+                context,
+                1,
+                Intent(context, LyricControlReceiver::class.java)
+                    .setAction(LyricControlReceiver.ACTION_TURN_OFF)
+                    .setPackage(context.packageName),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            ),
+        ).build()
+
         val notification = Notification.Builder(context, CHANNEL_ID)
+            .addAction(turnOff)
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setCustomContentView(views)
             .setCustomBigContentView(views)

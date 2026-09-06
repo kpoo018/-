@@ -37,6 +37,14 @@
         </service>
 
         <receiver
+            android:name=".service.LyricControlReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.kashi.lyrics.TURN_OFF" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
             android:name=".widget.LyricWidgetProvider"
             android:exported="false">
             <intent-filter>

@@ -18,6 +18,7 @@ import kotlinx.coroutines.withContext
 class LyricRepository(context: Context, private val settings: Settings) {
 
     private val cacheDir = File(context.cacheDir, "lyrics")
+    private val overrides = ReadingOverrides(context)
 
     /** 찾아봤지만 없었던 곡. 한 곡 때문에 매번 LRCLIB 을 두드리지 않도록 기억해 둔다. */
     private val misses = mutableSetOf<String>()
@@ -31,7 +32,9 @@ class LyricRepository(context: Context, private val settings: Settings) {
         if (cached != null) {
             // 번역 없이 만들어 둔 문서인데 이제 번역기가 생겼으면 다시 만든다.
             val wantsTranslation = translator.name != Translator.PROVIDER_NONE
-            if (!wantsTranslation || cached.translator != Translator.PROVIDER_NONE) return@withContext cached
+            if (!wantsTranslation || cached.translator != Translator.PROVIDER_NONE) {
+                return@withContext applyOverrides(cached)
+            }
         }
         if ("$key/${mode.id}" in misses) return@withContext null
 
@@ -40,18 +43,26 @@ class LyricRepository(context: Context, private val settings: Settings) {
         } catch (e: IOException) {
             // 네트워크 실패는 '없음'과 다르다. 미스로 기록하지 않고 다음에 다시 시도한다.
             Log.w(TAG, "가사를 받아오지 못했습니다: ${track.title}", e)
-            return@withContext cached
+            return@withContext cached?.let { applyOverrides(it) }
         } catch (e: Exception) {
             Log.w(TAG, "가사를 만들지 못했습니다: ${track.title}", e)
-            return@withContext cached
+            return@withContext cached?.let { applyOverrides(it) }
         }
 
         if (doc == null) {
             misses += "$key/${mode.id}"
             return@withContext null
         }
+        // 캐시에는 교정 없는 원본을 둔다. 교정은 읽을 때마다 위에 얹으므로 언제든 되돌릴 수 있다.
         writeCache(key, mode.id, doc)
-        doc
+        applyOverrides(doc)
+    }
+
+    /** 이 곡에 저장된 읽기 교정이 있으면 원문만 다시 분석해 얹는다. 네트워크를 타지 않는다. */
+    private fun applyOverrides(doc: LyricDoc): LyricDoc {
+        val corrections = overrides.forTrack(doc.trackId)
+        if (corrections.isEmpty()) return doc
+        return LyricBuilder.reanalyze(doc, HangulMode.of(doc.hangulMode), corrections)
     }
 
     /** 표기 모드나 번역기를 바꿨을 때처럼, 받아 둔 것을 버려야 할 때 부른다. */

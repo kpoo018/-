@@ -132,6 +132,37 @@ object Reading {
         }
     }
 
+    /**
+     * 한 줄에서 읽기를 고칠 만한 단위를 뽑는다.
+     *
+     * 한자가 든 형태소를 단위로 삼고, 뒤에 붙는 조동사까지 묶는다(行こ + う -> 行こう).
+     * 형태소를 반으로 자르면 남은 조각이 엉뚱하게 분석돼 띄어쓰기가 끼어들기 때문에,
+     * 한자만 떼어내지 않고 형태소 경계를 지킨다. 조사는 묶지 않는다. 明日 뒤의 へ 까지
+     * 끌고 오면 같은 단어를 다른 조사와 만났을 때 못 알아보기 때문이다.
+     */
+    fun correctableUnits(text: String): List<String> {
+        val morphemes = tokenizer.tokenize(text).map(::toMorpheme)
+        val units = LinkedHashSet<String>()
+        var i = 0
+        while (i < morphemes.size) {
+            if (!HAS_KANJI.containsMatchIn(morphemes[i].surface)) {
+                i++
+                continue
+            }
+            val unit = StringBuilder(morphemes[i].surface)
+            var j = i + 1
+            while (j < morphemes.size && morphemes[j].pos == "助動詞") {
+                unit.append(morphemes[j].surface)
+                j++
+            }
+            units += unit.toString()
+            i = j
+        }
+        return units.toList()
+    }
+
+    private val HAS_KANJI = Regex("[\\u4E00-\\u9FFF\\u3400-\\u4DBF々〆]")
+
     /** 가사 한 줄을 형태소 분석해 어절 단위로 묶는다. */
     fun analyze(text: String, overrides: Map<String, String> = emptyMap()): AnalyzedLine {
         val morphemes = ArrayList<Morpheme>()

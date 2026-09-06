@@ -6,6 +6,7 @@ import android.os.Looper
 import android.service.notification.NotificationListenerService
 import android.util.Log
 import com.kashi.lyrics.LyricState
+import com.kashi.lyrics.R
 import com.kashi.lyrics.data.LyricDoc
 import com.kashi.lyrics.data.LyricRepository
 import com.kashi.lyrics.data.Settings
@@ -89,14 +90,12 @@ class LyricListenerService : NotificationListenerService() {
     }
 
     private fun onNowPlayingChanged(now: NowPlaying?) {
+        if (!settings.enabled) {
+            goIdle("")
+            return
+        }
         if (now == null || !now.hasTrackInfo) {
-            track = null
-            doc = null
-            handler.removeCallbacks(tick)
-            lastRenderKey = null
-            notifier.hide()
-            LyricWidgetProvider.render(this, "", null, placeholder = "재생 중인 곡이 없습니다")
-            LyricState.clear()
+            goIdle(getString(R.string.no_track))
             return
         }
 
@@ -119,10 +118,26 @@ class LyricListenerService : NotificationListenerService() {
         reschedule()
     }
 
+    /** 아무것도 보여주지 않는 상태로 되돌린다. 꺼졌거나 재생 중인 곡이 없을 때. */
+    private fun goIdle(message: String) {
+        track = null
+        doc = null
+        handler.removeCallbacks(tick)
+        fetchJob?.cancel()
+        lastRenderKey = null
+        notifier.hide()
+        LyricWidgetProvider.render(this, "", null, placeholder = message)
+        LyricState.clear(message)
+    }
+
     /** 지금 보여줄 줄을 그리고, 다음 줄이 시작할 시각에 다시 깨어나도록 예약한다. */
     private fun reschedule() {
         handler.removeCallbacks(tick)
 
+        if (!settings.enabled) {
+            goIdle("")
+            return
+        }
         val now = track ?: return
         val current = doc
         if (current == null) {
@@ -167,6 +182,10 @@ class LyricListenerService : NotificationListenerService() {
     /** 설정이 바뀌었을 때 화면 쪽에서 부른다. */
     private fun onSettingsChanged() {
         repository.clearMisses()
+        if (!settings.enabled) {
+            goIdle("")
+            return
+        }
         doc = null
         lastRenderKey = null
         val now = track
