@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 13+ 에서 잠금화면 알림을 띄우려면 필요하다. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Kashi">
+
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+          알림 접근 권한을 받으면 시스템이 이 서비스를 붙잡아 두므로 별도의 포그라운드
+          서비스가 필요 없다. MediaSessionManager 를 읽으려면 어차피 이 권한이 있어야 한다.
+        -->
+        <service
+            android:name=".service.LyricListenerService"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".service.LyricControlReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.kashi.lyrics.TURN_OFF" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".widget.LyricWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/lyric_widget_info" />
+        </receiver>
+    </application>
+</manifest>

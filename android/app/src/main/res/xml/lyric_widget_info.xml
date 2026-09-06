@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 16 QPR2 부터는 폰 잠금화면에도 위젯을 올릴 수 있다. 그 이전 버전에서는
+  홈 화면 위젯으로만 쓰이고, 잠금화면은 상시 알림이 담당한다.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_description"
+    android:initialLayout="@layout/widget_lyrics"
+    android:minHeight="110dp"
+    android:minWidth="250dp"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen|keyguard" />
