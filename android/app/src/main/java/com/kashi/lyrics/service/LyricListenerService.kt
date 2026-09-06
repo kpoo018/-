@@ -11,6 +11,7 @@ import com.kashi.lyrics.data.LyricRepository
 import com.kashi.lyrics.data.Settings
 import com.kashi.lyrics.player.MediaWatcher
 import com.kashi.lyrics.player.NowPlaying
+import com.kashi.lyrics.text.Reading
 import com.kashi.lyrics.widget.LyricWidgetProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +53,8 @@ class LyricListenerService : NotificationListenerService() {
         repository = LyricRepository(this, settings)
         notifier = LyricNotifier(this)
         instance = this
+        // 형태소 사전 로딩에 1~2초 걸린다. 첫 곡에서 기다리지 않도록 미리 올려 둔다.
+        scope.launch(Dispatchers.IO) { Reading.warmUp() }
     }
 
     override fun onListenerConnected() {
@@ -123,10 +126,7 @@ class LyricListenerService : NotificationListenerService() {
         val now = track ?: return
         val current = doc
         if (current == null) {
-            val message =
-                if (!settings.isConfigured) "설정에서 서버 주소를 넣어 주세요"
-                else "가사를 찾는 중…"
-            render(now, null, -1, message)
+            render(now, null, -1, "가사를 찾는 중…")
             return
         }
 
@@ -171,7 +171,7 @@ class LyricListenerService : NotificationListenerService() {
         lastRenderKey = null
         val now = track
         if (now != null) {
-            // 곡이 바뀐 것처럼 다시 태워 표기 모드와 서버 주소를 새로 반영한다.
+            // 곡이 바뀐 것처럼 다시 태워 표기 모드와 번역기 설정을 새로 반영한다.
             track = null
             onNowPlayingChanged(now)
         } else {

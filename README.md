@@ -1,7 +1,7 @@
 # kashi — 일본어 가사를 원문 + 한글 발음 + 뜻으로
 
 Spotify 로 일본 노래를 들으면서 잠금화면에 **원문 / 한글 발음 / 한국어 뜻** 세 줄을
-띄우는 앱과, 그 가사를 만들어 주는 파이프라인.
+띄우는 안드로이드 앱. 서버 없이 폰에서 전부 처리한다.
 
 ```
 君はまだ知らない          ← 원문
@@ -15,12 +15,12 @@ Spotify 로 일본 노래를 들으면서 잠금화면에 **원문 / 한글 발�
 Spotify / YouTube Music / 로컬 플레이어
         │  (MediaSession: 곡 정보 + 재생 위치)
         ▼
-   Android 앱  ──HTTP──▶  파이프라인 서버 (PC)
-   잠금화면 알림                │
-   홈/잠금화면 위젯             ├─ LRCLIB      가사 (API 키 불필요)
-   앱 내 전체 가사              ├─ fugashi+UniDic  읽기
-                              ├─ 한글 변환기      발음 표기
-                              └─ Claude/DeepL/Papago  뜻
+   Android 앱 (전부 온디바이스)
+   ├─ LRCLIB            가사 (API 키 불필요)
+   ├─ Kuromoji + IPADIC  읽기 추출 (사전이 APK 에 들어 있어 12MB 쯤 커진다)
+   ├─ 한글 변환기         발음 표기
+   ├─ Claude/DeepL/Papago 뜻 (선택. 키를 앱 설정에 넣는다)
+   └─ 잠금화면 알림 · 위젯 · 전체 가사 화면
 ```
 
 **왜 Spotify SDK 를 안 쓰나.** Spotify 는 2026 년 개발 모드를 크게 조였다. 앱 소유자가
@@ -29,10 +29,15 @@ Premium 이어야 하고 허용 사용자는 5 명, 공개 배포에 필요한 e
 통째로 피하고, 덤으로 YouTube Music 과 로컬 플레이어까지 같은 코드로 덮인다. 대신
 **알림 접근 권한**이 필요하다.
 
-**왜 서버를 두나.** 형태소 분석 사전(UniDic)이 크고 번역은 API 키가 필요하다. 무거운
-일은 PC 에서 곡당 한 번만 하고, 폰은 결과 JSON 만 받아 캐시한다.
+**왜 서버가 없나.** 처음엔 PC 에서 형태소 분석을 하는 서버를 두었는데, 그러면 PC 를 켜 두고
+같은 와이파이에 있어야 한다. 밖에서 LTE 로 들으면 안 된다. Kuromoji 는 순수 Java 라 폰에서
+그대로 돌고, IPADIC 도 UniDic 처럼 장음(東京 -> トーキョー)과 조사(は -> ワ)를 정규화한
+발음 필드를 주므로 한글 변환기를 그대로 쓸 수 있었다.
 
-## 파이프라인
+`pipeline/` 의 Python 구현은 **한글 변환 규칙의 정답지**로 남긴다. `shared/hangul_vectors.json`
+을 두 구현이 같이 검사해서 서로 어긋나지 않게 한다. CLI 로 곡을 미리 확인하는 용도로도 쓴다.
+
+## 파이프라인 (Python, 참고 구현 + CLI)
 
 ### 설치
 
@@ -61,9 +66,6 @@ cd pipeline
 # 번역까지 (ANTHROPIC_API_KEY / DEEPL_API_KEY / PAPAGO_* 중 아무거나)
 export ANTHROPIC_API_KEY=sk-...
 ../.venv/bin/python -m kashi.cli build --artist YOASOBI --title 夜に駆ける --duration 261
-
-# 안드로이드 앱이 붙을 서버
-../.venv/bin/python -m kashi.cli serve --port 8765
 ```
 
 `--duration` 을 주면 같은 제목의 다른 버전(라이브·리믹스)을 집을 확률이 크게 준다.
@@ -111,29 +113,38 @@ export ANTHROPIC_API_KEY=sk-...
 가사는 주어가 자주 빠지고 비유가 많아 줄 단위로 던지면 번역이 무너진다. 어느 백엔드든
 **곡 전체를 한 번에** 보내고 줄 번호로 돌려받는다. 곡당 한 번이라 비용도 미미하다.
 
-### 테스트
+### 테스트와 공유 벡터
 
 ```bash
 .venv/bin/python -m pytest pipeline/tests -q
+```
+
+한글 변환 규칙을 바꾸면 벡터를 다시 만들고 안드로이드 쪽 `HangulVectorsTest` 도 돌린다:
+
+```bash
+cd pipeline && ../.venv/bin/python -m tools.gen_vectors > ../shared/hangul_vectors.json
 ```
 
 ## 안드로이드 앱
 
 `android/` 에 Gradle 프로젝트가 있다. Android Studio 로 열어 빌드한다 (minSdk 26).
 
-AndroidX 를 쓰지 않는다. 프레임워크 View 와 coroutines 만으로 충분한 크기라서 그렇게
-했고, 덕분에 Google Maven 에 닿을 수 없는 환경에서도 빌드할 수 있다:
+AndroidX 를 쓰지 않는다. 프레임워크 View 와 coroutines, Kuromoji 만으로 충분한 크기라서
+그렇게 했고, 덕분에 Google Maven 에 닿을 수 없는 환경에서도 빌드할 수 있다:
 
 ```bash
 # Gradle 없이. android.jar + kotlinc + d8 + aapt2 만 있으면 된다. 경로는 스크립트 상단 참고.
 android/build.sh apk    # app/build/kashi-debug.apk
-android/build.sh test   # JVM 단위 테스트
+android/build.sh test   # JVM 단위 테스트 (Kuromoji 포함, 실제 형태소 분석까지 돈다)
 ```
 
-1. 서버를 PC 에서 띄운다 (`kashi.cli serve`). 폰과 같은 네트워크여야 한다.
-2. 앱 설정에서 서버 주소를 넣는다. 예: `http://192.168.0.10:8765`
-3. **알림 접근 권한**을 켠다 (설정 화면의 버튼이 바로 데려간다).
-4. Spotify 에서 일본 노래를 재생한다.
+### 쓰는 법
+
+1. APK 설치 → 앱 열기 → **알림 접근 권한** 켜기 (설정 화면의 버튼이 바로 데려간다)
+2. (선택) 설정에서 번역기를 고르고 API 키를 넣는다. 없어도 원문 + 발음은 나온다.
+3. Spotify 에서 일본 노래를 재생한다.
+
+첫 곡에서 사전 로딩에 1~2 초 걸린다. 그 뒤로는 곡당 한 번 분석하고 캐시에 둔다.
 
 ### 잠금화면
 
@@ -157,9 +168,12 @@ android/build.sh test   # JVM 단위 테스트
 - **안드로이드 앱은 컴파일·패키징·단위 테스트까지는 검증했지만 기기에서 돌려 보지는
   못했다.** 에뮬레이터 시스템 이미지를 받을 수 없는 환경이었다. 알림 접근 권한 흐름과
   MediaSession 읽기는 실제 기기에서 확인이 필요하다. 파이프라인은 테스트 51 개,
-  앱은 JVM 테스트 8 개가 통과한다.
+  앱은 JVM 테스트 28 개가 통과한다 (Kuromoji 형태소 분석 포함).
 - **가사 저작권.** LRCLIB 은 크라우드소싱이라 개인 학습용으로 쓰는 것과 배포·상업
   이용은 완전히 다른 이야기다. 배포하려면 일본 곡은 JASRAC/NexTone, 한국 곡은 KOMCA
   관련 라이선스가 필요하고, 실무적으로는 Musixmatch(글로벌) 또는
   Syncpower/PetitLyrics(일본)와 계약하는 것이 정공법이다.
-- **서버에 인증이 없다.** 집 안 네트워크 전제다. 공개된 곳에 그대로 노출하지 말 것.
+- **API 키는 폰의 앱 전용 저장소(SharedPreferences)에 그대로 들어 있다.** 개인용 앱이라
+  그렇게 두었다. 배포하려면 서버 쪽으로 옮겨야 한다.
+- **IPADIC 은 2007 년 사전이라** 신조어와 최근 아티스트명은 UniDic 보다 약하다. 특수 읽기는
+  `Reading.analyze(..., overrides)` 로 직접 준다.

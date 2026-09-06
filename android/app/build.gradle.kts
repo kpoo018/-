@@ -33,6 +33,8 @@ android {
 // 덕분에 Google Maven 없이도 (android/build.sh) 빌드할 수 있다.
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    // 형태소 분석. 사전이 jar 에 들어 있어 APK 가 12MB 쯤 커진다.
+    implementation("com.atilika.kuromoji:kuromoji-ipadic:0.9.0")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")

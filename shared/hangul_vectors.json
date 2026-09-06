@@ -1,0 +1,566 @@
+[
+ {
+  "kana": "アイウエオ",
+  "pronunciation": "아이우에오",
+  "official": "아이우에오",
+  "official_medial": "아이우에오"
+ },
+ {
+  "kana": "カキクケコ",
+  "pronunciation": "카키쿠케코",
+  "official": "가키쿠케코",
+  "official_medial": "카키쿠케코"
+ },
+ {
+  "kana": "サシスセソ",
+  "pronunciation": "사시스세소",
+  "official": "사시스세소",
+  "official_medial": "사시스세소"
+ },
+ {
+  "kana": "タチツテト",
+  "pronunciation": "타치츠테토",
+  "official": "다치쓰테토",
+  "official_medial": "타치쓰테토"
+ },
+ {
+  "kana": "ナニヌネノ",
+  "pronunciation": "나니누네노",
+  "official": "나니누네노",
+  "official_medial": "나니누네노"
+ },
+ {
+  "kana": "ハヒフヘホ",
+  "pronunciation": "하히후헤호",
+  "official": "하히후헤호",
+  "official_medial": "하히후헤호"
+ },
+ {
+  "kana": "マミムメモ",
+  "pronunciation": "마미무메모",
+  "official": "마미무메모",
+  "official_medial": "마미무메모"
+ },
+ {
+  "kana": "ヤユヨ",
+  "pronunciation": "야유요",
+  "official": "야유요",
+  "official_medial": "야유요"
+ },
+ {
+  "kana": "ラリルレロ",
+  "pronunciation": "라리루레로",
+  "official": "라리루레로",
+  "official_medial": "라리루레로"
+ },
+ {
+  "kana": "ワヲン",
+  "pronunciation": "와온",
+  "official": "와온",
+  "official_medial": "와온"
+ },
+ {
+  "kana": "ガギグゲゴ",
+  "pronunciation": "가기구게고",
+  "official": "가기구게고",
+  "official_medial": "가기구게고"
+ },
+ {
+  "kana": "ザジズゼゾ",
+  "pronunciation": "자지즈제조",
+  "official": "자지즈제조",
+  "official_medial": "자지즈제조"
+ },
+ {
+  "kana": "ダヂヅデド",
+  "pronunciation": "다지즈데도",
+  "official": "다지즈데도",
+  "official_medial": "다지즈데도"
+ },
+ {
+  "kana": "バビブベボ",
+  "pronunciation": "바비부베보",
+  "official": "바비부베보",
+  "official_medial": "바비부베보"
+ },
+ {
+  "kana": "パピプペポ",
+  "pronunciation": "파피푸페포",
+  "official": "파피푸페포",
+  "official_medial": "파피푸페포"
+ },
+ {
+  "kana": "キャキュキョ",
+  "pronunciation": "캬큐쿄",
+  "official": "갸큐쿄",
+  "official_medial": "캬큐쿄"
+ },
+ {
+  "kana": "ギャギュギョ",
+  "pronunciation": "갸규교",
+  "official": "갸규교",
+  "official_medial": "갸규교"
+ },
+ {
+  "kana": "シャシュショ",
+  "pronunciation": "샤슈쇼",
+  "official": "샤슈쇼",
+  "official_medial": "샤슈쇼"
+ },
+ {
+  "kana": "ジャジュジョ",
+  "pronunciation": "자주조",
+  "official": "자주조",
+  "official_medial": "자주조"
+ },
+ {
+  "kana": "チャチュチョ",
+  "pronunciation": "차추초",
+  "official": "자추초",
+  "official_medial": "차추초"
+ },
+ {
+  "kana": "ニャニュニョ",
+  "pronunciation": "냐뉴뇨",
+  "official": "냐뉴뇨",
+  "official_medial": "냐뉴뇨"
+ },
+ {
+  "kana": "ヒャヒュヒョ",
+  "pronunciation": "햐휴효",
+  "official": "햐휴효",
+  "official_medial": "햐휴효"
+ },
+ {
+  "kana": "ビャビュビョ",
+  "pronunciation": "뱌뷰뵤",
+  "official": "뱌뷰뵤",
+  "official_medial": "뱌뷰뵤"
+ },
+ {
+  "kana": "ピャピュピョ",
+  "pronunciation": "퍄퓨표",
+  "official": "퍄퓨표",
+  "official_medial": "퍄퓨표"
+ },
+ {
+  "kana": "ミャミュミョ",
+  "pronunciation": "먀뮤묘",
+  "official": "먀뮤묘",
+  "official_medial": "먀뮤묘"
+ },
+ {
+  "kana": "リャリュリョ",
+  "pronunciation": "랴류료",
+  "official": "랴류료",
+  "official_medial": "랴류료"
+ },
+ {
+  "kana": "ファフィフェフォ",
+  "pronunciation": "파피페포",
+  "official": "파피페포",
+  "official_medial": "파피페포"
+ },
+ {
+  "kana": "ヴァヴィヴヴェヴォ",
+  "pronunciation": "바비부베보",
+  "official": "바비부베보",
+  "official_medial": "바비부베보"
+ },
+ {
+  "kana": "ティトゥディドゥ",
+  "pronunciation": "티투디두",
+  "official": "티투디두",
+  "official_medial": "티투디두"
+ },
+ {
+  "kana": "ウィウェウォ",
+  "pronunciation": "위웨워",
+  "official": "위웨워",
+  "official_medial": "위웨워"
+ },
+ {
+  "kana": "シェジェチェ",
+  "pronunciation": "셰제체",
+  "official": "셰제체",
+  "official_medial": "셰제체"
+ },
+ {
+  "kana": "ツァツィツェツォ",
+  "pronunciation": "차치체초",
+  "official": "차치체초",
+  "official_medial": "차치체초"
+ },
+ {
+  "kana": "クァクォグァ",
+  "pronunciation": "콰쿼과",
+  "official": "콰쿼과",
+  "official_medial": "콰쿼과"
+ },
+ {
+  "kana": "フュ",
+  "pronunciation": "퓨",
+  "official": "퓨",
+  "official_medial": "퓨"
+ },
+ {
+  "kana": "トーキョー",
+  "pronunciation": "토오쿄오",
+  "official": "도쿄",
+  "official_medial": "토쿄"
+ },
+ {
+  "kana": "キョー",
+  "pronunciation": "쿄오",
+  "official": "교",
+  "official_medial": "쿄"
+ },
+ {
+  "kana": "ホントーニ",
+  "pronunciation": "혼토오니",
+  "official": "혼토니",
+  "official_medial": "혼토니"
+ },
+ {
+  "kana": "ウィンター",
+  "pronunciation": "윈타아",
+  "official": "윈타",
+  "official_medial": "윈타"
+ },
+ {
+  "kana": "オネーサン",
+  "pronunciation": "오네에산",
+  "official": "오네산",
+  "official_medial": "오네산"
+ },
+ {
+  "kana": "ラーメン",
+  "pronunciation": "라아멘",
+  "official": "라멘",
+  "official_medial": "라멘"
+ },
+ {
+  "kana": "トウキョウ",
+  "pronunciation": "토우쿄우",
+  "official": "도쿄",
+  "official_medial": "토쿄"
+ },
+ {
+  "kana": "オオサカ",
+  "pronunciation": "오오사카",
+  "official": "오사카",
+  "official_medial": "오사카"
+ },
+ {
+  "kana": "ユウキ",
+  "pronunciation": "유우키",
+  "official": "유키",
+  "official_medial": "유키"
+ },
+ {
+  "kana": "センセイ",
+  "pronunciation": "센세이",
+  "official": "센세이",
+  "official_medial": "센세이"
+ },
+ {
+  "kana": "ヘイセイ",
+  "pronunciation": "헤이세이",
+  "official": "헤이세이",
+  "official_medial": "헤이세이"
+ },
+ {
+  "kana": "オカアサン",
+  "pronunciation": "오카아산",
+  "official": "오카산",
+  "official_medial": "오카산"
+ },
+ {
+  "kana": "オニイサン",
+  "pronunciation": "오니이산",
+  "official": "오니산",
+  "official_medial": "오니산"
+ },
+ {
+  "kana": "ガッコー",
+  "pronunciation": "각코오",
+  "official": "갓코",
+  "official_medial": "갓코"
+ },
+ {
+  "kana": "イッパイ",
+  "pronunciation": "입파이",
+  "official": "잇파이",
+  "official_medial": "잇파이"
+ },
+ {
+  "kana": "マッテ",
+  "pronunciation": "맛테",
+  "official": "맛테",
+  "official_medial": "맛테"
+ },
+ {
+  "kana": "ザッシ",
+  "pronunciation": "잣시",
+  "official": "잣시",
+  "official_medial": "잣시"
+ },
+ {
+  "kana": "キッテ",
+  "pronunciation": "킷테",
+  "official": "깃테",
+  "official_medial": "킷테"
+ },
+ {
+  "kana": "ジェット",
+  "pronunciation": "젯토",
+  "official": "젯토",
+  "official_medial": "젯토"
+ },
+ {
+  "kana": "チョット",
+  "pronunciation": "촛토",
+  "official": "좃토",
+  "official_medial": "촛토"
+ },
+ {
+  "kana": "ヤッタ",
+  "pronunciation": "얏타",
+  "official": "얏타",
+  "official_medial": "얏타"
+ },
+ {
+  "kana": "サンポ",
+  "pronunciation": "삼포",
+  "official": "산포",
+  "official_medial": "산포"
+ },
+ {
+  "kana": "センパイ",
+  "pronunciation": "셈파이",
+  "official": "센파이",
+  "official_medial": "센파이"
+ },
+ {
+  "kana": "リンゴ",
+  "pronunciation": "링고",
+  "official": "린고",
+  "official_medial": "린고"
+ },
+ {
+  "kana": "コンニチワ",
+  "pronunciation": "콘니치와",
+  "official": "곤니치와",
+  "official_medial": "콘니치와"
+ },
+ {
+  "kana": "ニホン",
+  "pronunciation": "니혼",
+  "official": "니혼",
+  "official_medial": "니혼"
+ },
+ {
+  "kana": "ホンヤ",
+  "pronunciation": "혼야",
+  "official": "혼야",
+  "official_medial": "혼야"
+ },
+ {
+  "kana": "カンジ",
+  "pronunciation": "칸지",
+  "official": "간지",
+  "official_medial": "칸지"
+ },
+ {
+  "kana": "ミンナ",
+  "pronunciation": "민나",
+  "official": "민나",
+  "official_medial": "민나"
+ },
+ {
+  "kana": "ンン",
+  "pronunciation": "은은",
+  "official": "은은",
+  "official_medial": "은은"
+ },
+ {
+  "kana": "アン",
+  "pronunciation": "안",
+  "official": "안",
+  "official_medial": "안"
+ },
+ {
+  "kana": "シラナイ",
+  "pronunciation": "시라나이",
+  "official": "시라나이",
+  "official_medial": "시라나이"
+ },
+ {
+  "kana": "アイシテル",
+  "pronunciation": "아이시테루",
+  "official": "아이시테루",
+  "official_medial": "아이시테루"
+ },
+ {
+  "kana": "ハジメマシテ",
+  "pronunciation": "하지메마시테",
+  "official": "하지메마시테",
+  "official_medial": "하지메마시테"
+ },
+ {
+  "kana": "キミワ",
+  "pronunciation": "키미와",
+  "official": "기미와",
+  "official_medial": "키미와"
+ },
+ {
+  "kana": "ジャナイ",
+  "pronunciation": "자나이",
+  "official": "자나이",
+  "official_medial": "자나이"
+ },
+ {
+  "kana": "ツヨイ",
+  "pronunciation": "츠요이",
+  "official": "쓰요이",
+  "official_medial": "쓰요이"
+ },
+ {
+  "kana": "ミツケタ",
+  "pronunciation": "미츠케타",
+  "official": "미쓰케타",
+  "official_medial": "미쓰케타"
+ },
+ {
+  "kana": "ドライブ",
+  "pronunciation": "도라이부",
+  "official": "도라이부",
+  "official_medial": "도라이부"
+ },
+ {
+  "kana": "ファイト",
+  "pronunciation": "파이토",
+  "official": "파이토",
+  "official_medial": "파이토"
+ },
+ {
+  "kana": "ラヴ",
+  "pronunciation": "라부",
+  "official": "라부",
+  "official_medial": "라부"
+ },
+ {
+  "kana": "サヨナラ",
+  "pronunciation": "사요나라",
+  "official": "사요나라",
+  "official_medial": "사요나라"
+ },
+ {
+  "kana": "アリガトウ",
+  "pronunciation": "아리가토우",
+  "official": "아리가토",
+  "official_medial": "아리가토"
+ },
+ {
+  "kana": "オヤスミ",
+  "pronunciation": "오야스미",
+  "official": "오야스미",
+  "official_medial": "오야스미"
+ },
+ {
+  "kana": "きみは",
+  "pronunciation": "키미하",
+  "official": "기미하",
+  "official_medial": "키미하"
+ },
+ {
+  "kana": "ありがとう",
+  "pronunciation": "아리가토우",
+  "official": "아리가토",
+  "official_medial": "아리가토"
+ },
+ {
+  "kana": "がっこう",
+  "pronunciation": "각코우",
+  "official": "갓코",
+  "official_medial": "갓코"
+ },
+ {
+  "kana": "きょう",
+  "pronunciation": "쿄우",
+  "official": "교",
+  "official_medial": "쿄"
+ },
+ {
+  "kana": "ドライブ (Drive)",
+  "pronunciation": "도라이부 (Drive)",
+  "official": "도라이부 (Drive)",
+  "official_medial": "도라이부 (Drive)"
+ },
+ {
+  "kana": "アイ、ラブ",
+  "pronunciation": "아이、라부",
+  "official": "아이、라부",
+  "official_medial": "아이、라부"
+ },
+ {
+  "kana": "walking in the rain",
+  "pronunciation": "walking in the rain",
+  "official": "walking in the rain",
+  "official_medial": "walking in the rain"
+ },
+ {
+  "kana": "ABC",
+  "pronunciation": "ABC",
+  "official": "ABC",
+  "official_medial": "ABC"
+ },
+ {
+  "kana": "",
+  "pronunciation": "",
+  "official": "",
+  "official_medial": ""
+ },
+ {
+  "kana": "。",
+  "pronunciation": "。",
+  "official": "。",
+  "official_medial": "。"
+ },
+ {
+  "kana": "シュー",
+  "pronunciation": "슈우",
+  "official": "슈",
+  "official_medial": "슈"
+ },
+ {
+  "kana": "リョー",
+  "pronunciation": "료오",
+  "official": "료",
+  "official_medial": "료"
+ },
+ {
+  "kana": "ニュー",
+  "pronunciation": "뉴우",
+  "official": "뉴",
+  "official_medial": "뉴"
+ },
+ {
+  "kana": "ファー",
+  "pronunciation": "파아",
+  "official": "파",
+  "official_medial": "파"
+ },
+ {
+  "kana": "ウォー",
+  "pronunciation": "워오",
+  "official": "워",
+  "official_medial": "워"
+ },
+ {
+  "kana": "ティー",
+  "pronunciation": "티이",
+  "official": "티",
+  "official_medial": "티"
+ }
+]

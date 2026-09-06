@@ -50,32 +50,37 @@ runtime_classpath() {
 }
 
 compile_sources() {
-  # $1 = 출력 디렉터리, $2.. = 소스 루트
+  # $1 = 출력 디렉터리, 이어서 소스 루트들, 그 뒤 '--' 다음은 kotlinc 추가 옵션
   local out="$1"; shift
-  local cp="$ANDROID_JAR:$(runtime_classpath)"
+  # EXTRA_CP 로 classpath 를 덧붙일 수 있다 (테스트가 본체 클래스와 JUnit 을 얹는 데 쓴다).
+  local cp="$ANDROID_JAR:$(runtime_classpath)${EXTRA_CP:+:$EXTRA_CP}"
   rm -rf "$out"; mkdir -p "$out"
 
   local sources=()
-  for root in "$@"; do
-    while IFS= read -r f; do sources+=("$f"); done < <(find "$root" -name '*.kt' -o -name '*.java' | sort)
+  while (( $# )) && [[ "$1" != "--" ]]; do
+    while IFS= read -r f; do sources+=("$f"); done < <(find "$1" -name '*.kt' -o -name '*.java' | sort)
+    shift
   done
+  [[ "${1:-}" == "--" ]] && shift
 
   # kotlinc 는 .java 를 참조 해석에만 쓰고 컴파일하지는 않는다. R.java 는 javac 로 따로 돈다.
-  "$KOTLINC" -no-stdlib -no-reflect \
-    -jvm-target 17 \
-    -cp "$cp" \
-    -d "$out" \
-    "${sources[@]}" 2>&1 | grep -v '^warning: .*JAVA_TOOL_OPTIONS' || true
+  # 종료 코드를 반드시 확인한다. 파이프에 grep 을 물리면 실패가 묻히고, 낡은 클래스로
+  # 패키징까지 조용히 진행돼 버린다.
+  local kotlinc_log="$out.kotlinc.log"
+  if ! "$KOTLINC" -no-stdlib -no-reflect -jvm-target 17 -cp "$cp" -d "$out" "$@" "${sources[@]}" \
+      >"$kotlinc_log" 2>&1; then
+    grep -v 'JAVA_TOOL_OPTIONS' "$kotlinc_log" >&2
+    echo "Kotlin 컴파일 실패" >&2
+    exit 1
+  fi
+  grep -v 'JAVA_TOOL_OPTIONS' "$kotlinc_log" | grep -i 'warning' >&2 || true
 
   local javas=()
   for f in "${sources[@]}"; do [[ "$f" == *.java ]] && javas+=("$f"); done
   if (( ${#javas[@]} )); then
-    javac -source 17 -target 17 -nowarn \
-      -cp "$cp:$out" -d "$out" "${javas[@]}" 2>&1 | grep -v JAVA_TOOL_OPTIONS || true
+    javac -source 17 -target 17 -nowarn -cp "$cp:$out" -d "$out" "${javas[@]}" \
+      2> >(grep -v JAVA_TOOL_OPTIONS >&2) || { echo "javac 실패" >&2; exit 1; }
   fi
-
-  # 컴파일이 실제로 뭔가 냈는지 확인한다. 위에서 grep 이 종료코드를 삼키기 때문이다.
-  find "$out" -name '*.class' | grep -q . || { echo "컴파일 실패: 클래스가 없습니다" >&2; exit 1; }
 }
 
 build_apk() {
@@ -101,6 +106,7 @@ build_apk() {
 
   log "Kotlin 컴파일"
   compile_sources "$OUT/classes" "$APP/src/main/java" "$OUT/gen"
+  require "$OUT/classes/com/kashi/lyrics/ui/MainActivity.class"
 
   log "dex 변환 (d8)"
   # d8 은 클래스 디렉터리를 받지 않는다. jar 로 묶어 넘긴다.
@@ -115,6 +121,13 @@ build_apk() {
   log "패키징"
   cp "$OUT/resources.apk" "$OUT/unaligned.apk"
   (cd "$OUT/dex" && zip -q "$OUT/unaligned.apk" classes*.dex)
+  # 라이브러리 jar 의 클래스 아닌 파일(Kuromoji 사전 .bin 등)은 APK 루트에 그대로 들어가야
+  # getResourceAsStream 으로 읽힌다. AGP 가 자동으로 하는 일을 여기서 직접 한다.
+  rm -rf "$OUT/jarres"; mkdir -p "$OUT/jarres"
+  for jar in "$LIBS_DIR"/*.jar; do
+    unzip -qo "$jar" -d "$OUT/jarres" -x '*.class' 'META-INF/*' 'module-info.class' 2>/dev/null || true
+  done
+  (cd "$OUT/jarres" && find . -type f | sort | zip -q -@ "$OUT/unaligned.apk")
   "$ZIPALIGN" -f -p 4 "$OUT/unaligned.apk" "$OUT/aligned.apk"
 
   log "서명 (디버그 키)"
@@ -136,15 +149,14 @@ run_tests() {
   local test_out="$OUT/test-classes"
   local main_out="$OUT/classes"
 
-  # 단위 테스트는 앱 클래스가 있어야 하므로 먼저 본체를 컴파일한다.
-  [[ -d "$main_out" ]] || build_apk >/dev/null
+  # 언제나 본체를 새로 빌드한다. 낡은 클래스로 테스트하면 고친 코드가 검증되지 않는다.
+  build_apk >/dev/null
 
   log "테스트 컴파일"
-  local cp="$ANDROID_JAR:$(runtime_classpath):$main_out"
-  for jar in "$TESTLIBS_DIR"/*.jar; do cp="$cp:$jar"; done
-  rm -rf "$test_out"; mkdir -p "$test_out"
-  "$KOTLINC" -no-stdlib -no-reflect -jvm-target 17 -cp "$cp" -d "$test_out" \
-    $(find "$APP/src/test" -name '*.kt') 2>&1 | grep -v JAVA_TOOL_OPTIONS || true
+  local extra="$main_out"
+  for jar in "$TESTLIBS_DIR"/*.jar; do extra="$extra:$jar"; done
+  # -Xfriend-paths: Gradle 이 테스트 소스셋에 주는 것과 같은 권한. internal 멤버에 닿을 수 있다.
+  EXTRA_CP="$extra" compile_sources "$test_out" "$APP/src/test" -- -Xfriend-paths="$main_out"
 
   log "테스트 실행"
   # android.jar 는 스텁이라 런타임에 쓸 수 없다. org.json 은 순수 JVM 구현으로 바꿔 넣고,
@@ -152,7 +164,7 @@ run_tests() {
   local classes
   classes=$(cd "$test_out" && find . -name '*Test.class' | sed 's#^\./##; s#\.class$##; s#/#.#g' | tr '\n' ' ')
   # android.jar 는 클래스 로딩(검증)용으로만 얹는다. 실제 프레임워크 호출은 "Stub!" 을 던진다.
-  java -cp "$test_out:$main_out:$(runtime_classpath):$(echo "$TESTLIBS_DIR"/*.jar | tr ' ' ':'):$ANDROID_JAR" \
+  java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 -cp "$test_out:$main_out:$(runtime_classpath):$(echo "$TESTLIBS_DIR"/*.jar | tr ' ' ':'):$ANDROID_JAR" \
     org.junit.runner.JUnitCore $classes 2>&1 | grep -v JAVA_TOOL_OPTIONS
 }
 

@@ -56,11 +56,9 @@ class Chunk:
         return "".join(t.source_kana(mode) for t in self.tokens)
 
     def hangul(self, mode: Mode) -> str:
-        # 어절의 첫 형태소만 어두로 취급한다 (표기법 모드의 평음화 규칙).
-        return "".join(
-            to_hangul(token.source_kana(mode), mode, word_initial=(index == 0))
-            for index, token in enumerate(self.tokens)
-        )
+        # 어절 전체를 한 번에 변환한다. 어두 평음화는 첫 모라에만 걸리고, 형태소 경계를 넘는
+        # 장음(行こ+う -> イコー)도 하나로 이어져야 제대로 접힌다.
+        return to_hangul(self.kana(mode), mode, word_initial=True)
 
 
 @dataclass
@@ -149,6 +147,21 @@ def _split_by_overrides(text: str, overrides: dict[str, str]):
         yield ("text", "".join(buffer), "")
 
 
+# お단으로 끝나는 가나. 의지형 う 가 이 뒤에 오면 장음이다.
+_O_ROW = set("オコソトノホモヨロヲゴゾドボポョ")
+
+
+def _normalize_volitional_u(tokens: list[Token]) -> None:
+    """行こ+う 처럼 쪼개진 의지형의 조동사 う 를 장음(ー)으로 바꾼다.
+
+    UniDic 은 대개 한 덩어리(イコー)로 주지만 IPADIC(안드로이드 쪽)은 쪼갠다.
+    두 구현이 같은 결과를 내도록 양쪽에 같은 규칙을 둔다.
+    """
+    for previous, token in zip(tokens, tokens[1:]):
+        if token.pos == "助動詞" and token.surface == "う" and previous.pron[-1:] in _O_ROW:
+            token.pron = "ー"
+
+
 def analyze(text: str, overrides: dict[str, str] | None = None) -> AnalyzedLine:
     """가사 한 줄을 형태소 분석해 어절 단위로 묶는다."""
     tagger = _tagger()
@@ -161,6 +174,8 @@ def analyze(text: str, overrides: dict[str, str] | None = None) -> AnalyzedLine:
             )
         else:
             tokens.extend(_to_token(word) for word in tagger(piece))
+
+    _normalize_volitional_u(tokens)
 
     chunks: list[Chunk] = []
     for token in tokens:

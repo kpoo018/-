@@ -2,16 +2,11 @@ package com.kashi.lyrics.data
 
 import android.content.Context
 
-/** 앱 설정. 서버 주소와 표기 모드, 싱크 보정값을 담는다. */
+/** 앱 설정. 표기 모드, 번역기, 싱크 보정값을 담는다. */
 class Settings(context: Context) {
 
     private val prefs = context.applicationContext
         .getSharedPreferences("kashi", Context.MODE_PRIVATE)
-
-    /** 파이프라인 서버 주소. 예: http://192.168.0.10:8765 */
-    var serverUrl: String
-        get() = prefs.getString(KEY_SERVER, "")!!
-        set(value) = prefs.edit().putString(KEY_SERVER, value.trimEnd('/')).apply()
 
     /** "pronunciation" 또는 "official". */
     var hangulMode: String
@@ -33,15 +28,32 @@ class Settings(context: Context) {
         get() = prefs.getBoolean(KEY_NOTIFICATION, true)
         set(value) = prefs.edit().putBoolean(KEY_NOTIFICATION, value).apply()
 
-    val isConfigured: Boolean get() = serverUrl.isNotBlank()
+    /** 번역기. none / claude / deepl / papago. 번역은 선택이라 없어도 원문+발음은 나온다. */
+    var translatorProvider: String
+        get() = prefs.getString(KEY_TRANSLATOR, Translator.PROVIDER_NONE)!!
+        set(value) = prefs.edit().putString(KEY_TRANSLATOR, value).apply()
+
+    /** Claude/DeepL 의 API 키, 파파고의 client id. */
+    var apiKey: String
+        get() = prefs.getString(KEY_API_KEY, "")!!
+        set(value) = prefs.edit().putString(KEY_API_KEY, value.trim()).apply()
+
+    /** 파파고의 client secret. 다른 번역기는 쓰지 않는다. */
+    var apiSecret: String
+        get() = prefs.getString(KEY_API_SECRET, "")!!
+        set(value) = prefs.edit().putString(KEY_API_SECRET, value.trim()).apply()
+
+    fun translator(): Translator = Translator.from(translatorProvider, apiKey, apiSecret)
 
     companion object {
         const val MODE_PRONUNCIATION = "pronunciation"
         const val MODE_OFFICIAL = "official"
 
-        private const val KEY_SERVER = "server_url"
         private const val KEY_MODE = "hangul_mode"
         private const val KEY_OFFSET = "offset_ms"
         private const val KEY_NOTIFICATION = "notification_enabled"
+        private const val KEY_TRANSLATOR = "translator_provider"
+        private const val KEY_API_KEY = "api_key"
+        private const val KEY_API_SECRET = "api_secret"
     }
 }

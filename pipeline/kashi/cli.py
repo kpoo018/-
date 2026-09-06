@@ -103,13 +103,6 @@ def cmd_build(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_serve(args: argparse.Namespace) -> int:
-    from .server import serve
-
-    serve(host=args.host, port=args.port, translator_name=args.translator)
-    return 0
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="kashi", description="일본어 가사를 원문 + 한글 발음 + 뜻으로 가공합니다."
@@ -136,12 +129,6 @@ def build_parser() -> argparse.ArgumentParser:
     make.add_argument("--refresh", action="store_true", help="캐시를 무시하고 다시 만듭니다")
     make.add_argument("--cache-dir")
     make.set_defaults(func=cmd_build)
-
-    server = sub.add_parser("serve", help="안드로이드 앱이 붙을 HTTP 서버를 띄웁니다")
-    server.add_argument("--host", default="0.0.0.0")
-    server.add_argument("--port", type=int, default=8765)
-    server.add_argument("--translator", default="auto")
-    server.set_defaults(func=cmd_serve)
 
     return parser
 

@@ -1,5 +1,6 @@
 package com.kashi.lyrics.data
 
+import org.json.JSONArray
 import org.json.JSONObject
 
 /** 가사 한 줄. [timeMs] 가 null 이면 싱크 정보가 없는 가사다. */
@@ -23,6 +24,9 @@ data class LyricDoc(
     val synced: Boolean,
     val hangulMode: String,
     val lines: List<LyricLine>,
+    /** 뜻을 만든 번역기. "none" 이면 나중에 번역기가 생겼을 때 다시 만든다. */
+    val translator: String = "none",
+    val source: String = "",
 ) {
     /** 시간이 붙은 줄만 모아 둔 색인. 이분 탐색 대상이다. */
     private val timeline: List<Int> =
@@ -60,6 +64,32 @@ data class LyricDoc(
 
     fun lineAt(index: Int): LyricLine? = lines.getOrNull(index)
 
+    /** 파이프라인 서버가 내던 것과 같은 모양의 JSON. 캐시 파일 형식이다. */
+    fun toJson(): JSONObject {
+        val array = JSONArray()
+        for (line in lines) {
+            array.put(
+                JSONObject()
+                    .put("time", if (line.timeMs == null) JSONObject.NULL else line.timeMs / 1000.0)
+                    .put("original", line.original)
+                    .put("reading", line.reading)
+                    .put("hangul", line.hangul)
+                    .put("translation", line.translation)
+            )
+        }
+        return JSONObject()
+            .put("track_id", trackId)
+            .put("artist", artist)
+            .put("title", title)
+            .put("album", album)
+            .put("duration", durationMs / 1000.0)
+            .put("synced", synced)
+            .put("hangul_mode", hangulMode)
+            .put("translator", translator)
+            .put("source", source)
+            .put("lines", array)
+    }
+
     companion object {
         fun parse(json: String): LyricDoc {
             val root = JSONObject(json)
@@ -89,6 +119,8 @@ data class LyricDoc(
                 synced = root.optBoolean("synced"),
                 hangulMode = root.optString("hangul_mode", "pronunciation"),
                 lines = lines,
+                translator = root.optString("translator", "none"),
+                source = root.optString("source"),
             )
         }
     }

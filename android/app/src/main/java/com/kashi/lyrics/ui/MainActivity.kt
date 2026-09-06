@@ -22,6 +22,7 @@ import com.kashi.lyrics.R
 import com.kashi.lyrics.data.LyricDoc
 import com.kashi.lyrics.data.LyricLine
 import com.kashi.lyrics.data.Settings
+import com.kashi.lyrics.data.Translator
 import com.kashi.lyrics.service.LyricListenerService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +34,7 @@ import kotlinx.coroutines.launch
 /**
  * 전체 가사 화면과 설정.
  *
- * AndroidX 없이 프레임워크 View 만 쓴다. 의존성이 kotlin-stdlib 와 coroutines 뿐이라
+ * AndroidX 없이 프레임워크 View 만 쓴다. 의존성이 kotlin-stdlib, coroutines, kuromoji 뿐이라
  * Google Maven 없이도 빌드된다.
  */
 class MainActivity : Activity() {
@@ -66,8 +67,8 @@ class MainActivity : Activity() {
         list.adapter = adapter
 
         bindSettings()
-        // 서버 주소가 없으면 설정부터 보여준다.
-        showSettings(!settings.isConfigured)
+        // 권한이 아직 없으면 설정부터 보여준다. 그게 첫 화면에서 할 일이다.
+        showSettings(!isListenerEnabled())
 
         // Android 13+ 는 알림을 띄우려면 따로 허락을 받아야 한다.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -108,16 +109,12 @@ class MainActivity : Activity() {
             startActivity(Intent(AndroidSettings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
         }
 
-        val serverUrl = findViewById<EditText>(R.id.server_url)
-        serverUrl.setText(settings.serverUrl)
-        serverUrl.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) saveServerUrl(serverUrl)
-        }
-        serverUrl.setOnEditorActionListener { _, _, _ ->
-            saveServerUrl(serverUrl)
-            false
-        }
+        bindModeGroup()
+        bindTranslator()
+        bindOffset()
+    }
 
+    private fun bindModeGroup() {
         val modeGroup = findViewById<RadioGroup>(R.id.mode_group)
         modeGroup.check(
             if (settings.hangulMode == Settings.MODE_OFFICIAL) R.id.mode_official
@@ -132,7 +129,57 @@ class MainActivity : Activity() {
                 LyricListenerService.requestRefresh()
             }
         }
+    }
 
+    private fun bindTranslator() {
+        val group = findViewById<RadioGroup>(R.id.translator_group)
+        val keyField = findViewById<EditText>(R.id.api_key)
+        val secretField = findViewById<EditText>(R.id.api_secret)
+
+        val ids = mapOf(
+            Translator.PROVIDER_NONE to R.id.translator_none,
+            Translator.PROVIDER_CLAUDE to R.id.translator_claude,
+            Translator.PROVIDER_DEEPL to R.id.translator_deepl,
+            Translator.PROVIDER_PAPAGO to R.id.translator_papago,
+        )
+
+        fun applyProvider(provider: String) {
+            val papago = provider == Translator.PROVIDER_PAPAGO
+            keyField.visibility = if (provider == Translator.PROVIDER_NONE) View.GONE else View.VISIBLE
+            keyField.setHint(if (papago) R.string.papago_id_hint else R.string.api_key_hint)
+            secretField.visibility = if (papago) View.VISIBLE else View.GONE
+        }
+
+        group.check(ids[settings.translatorProvider] ?: R.id.translator_none)
+        keyField.setText(settings.apiKey)
+        secretField.setText(settings.apiSecret)
+        applyProvider(settings.translatorProvider)
+
+        group.setOnCheckedChangeListener { _, checkedId ->
+            val provider = ids.entries.firstOrNull { it.value == checkedId }?.key ?: Translator.PROVIDER_NONE
+            applyProvider(provider)
+            if (provider != settings.translatorProvider) {
+                settings.translatorProvider = provider
+                LyricListenerService.requestRefresh()
+            }
+        }
+
+        fun saveKeys() {
+            val key = keyField.text.toString().trim()
+            val secret = secretField.text.toString().trim()
+            if (key != settings.apiKey || secret != settings.apiSecret) {
+                settings.apiKey = key
+                settings.apiSecret = secret
+                LyricListenerService.requestRefresh()
+            }
+        }
+        for (field in listOf(keyField, secretField)) {
+            field.setOnFocusChangeListener { _, hasFocus -> if (!hasFocus) saveKeys() }
+            field.setOnEditorActionListener { _, _, _ -> saveKeys(); false }
+        }
+    }
+
+    private fun bindOffset() {
         val offsetLabel = findViewById<TextView>(R.id.offset_label)
         val offsetSeek = findViewById<SeekBar>(R.id.offset_seek)
         // -3000ms ~ +3000ms 를 100ms 단위로. progress 30 이 0ms 다.
@@ -153,20 +200,13 @@ class MainActivity : Activity() {
 
     private fun offsetOf(progress: Int): Long = (progress - OFFSET_STEPS / 2) * OFFSET_STEP_MS
 
-    private fun saveServerUrl(field: EditText) {
-        val value = field.text.toString().trim()
-        if (value != settings.serverUrl) {
-            settings.serverUrl = value
-            LyricListenerService.requestRefresh()
-        }
-    }
+    private fun isListenerEnabled(): Boolean =
+        AndroidSettings.Secure.getString(contentResolver, "enabled_notification_listeners")
+            ?.contains(packageName) == true
 
     private fun refreshPermissionCard() {
-        val enabled = AndroidSettings.Secure.getString(
-            contentResolver, "enabled_notification_listeners"
-        )?.contains(packageName) == true
         findViewById<View>(R.id.permission_card).visibility =
-            if (enabled) View.GONE else View.VISIBLE
+            if (isListenerEnabled()) View.GONE else View.VISIBLE
     }
 
     private fun render(snapshot: LyricState.Snapshot) {
